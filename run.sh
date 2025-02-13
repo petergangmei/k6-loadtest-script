@@ -30,9 +30,18 @@ get_duration_input() {
     local default=$2
     local input
     
-    echo "$prompt (Format: number + s/m/h, e.g., 30s, 5m, 1h)"
-    read -p "[$default]: " input
-    echo ${input:-$default}
+    while true; do
+        read -p "$prompt (e.g., 30s, 5m, 1h) [$default]: " input
+        input=${input:-$default}
+        
+        # Validate duration format
+        if [[ $input =~ ^[0-9]+[smh]$ ]]; then
+            echo "$input"
+            return 0
+        else
+            echo "Invalid format. Please use a number followed by s (seconds), m (minutes), or h (hours)"
+        fi
+    done
 }
 
 # Function to configure load test parameters

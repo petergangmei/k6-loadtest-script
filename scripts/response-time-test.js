@@ -1,15 +1,16 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { SITE_URLS, HTTP_REQ_DURATION } from '../values.js';
+import { SITE_URLS, LOAD_TEST_CONFIG } from '../values.js';
 
 // Get configuration from environment variables
 const SITE_URL = SITE_URLS[__ENV.K6_SELECTED_INDEX || 0];
+const THRESHOLD = LOAD_TEST_CONFIG.threshold;
 
 export const options = {
   vus: 1,
   duration: '3s',
   thresholds: {
-    http_req_duration: [`p(95)<${HTTP_REQ_DURATION}`],
+    http_req_duration: [`p(95)<${THRESHOLD}`],
   },
 };
 
@@ -27,7 +28,7 @@ export default function() {
   
   check(response, {
     'status is 200': (r) => r.status === 200,
-    [`response time < ${HTTP_REQ_DURATION}ms`]: (r) => r.timings.duration < HTTP_REQ_DURATION,
+    [`response time < ${THRESHOLD}ms`]: (r) => r.timings.duration < THRESHOLD,
   });
 
   console.log(`Response time: ${response.timings.duration}ms`);
@@ -39,10 +40,10 @@ export function handleSummary(data) {
   console.log('======= Response Time Test Summary =========');
   console.log(`Site Tested:`);
   console.log(`${SITE_URL}`);
+  console.log(`Threshold: ${THRESHOLD}ms`);
   console.log(`Average Response Time: ${data.metrics.http_req_duration.values.avg.toFixed(2)}ms`);
   console.log(`Minimum Response Time: ${data.metrics.http_req_duration.values.min.toFixed(2)}ms`);
   console.log(`Maximum Response Time: ${data.metrics.http_req_duration.values.max.toFixed(2)}ms`);
-  
   console.log(`Total Requests: ${data.metrics.http_reqs.values.count}`);
   console.log('============================================');
 }

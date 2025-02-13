@@ -10,10 +10,11 @@ A configurable load testing suite built with k6 for testing website performance 
   - Target Virtual Users
   - Ramp-up duration
   - Response time thresholds
+  - Maximum failures threshold
 - Two testing modes:
   - Load Test (configurable VUs and duration)
   - Response Time Test (single VU for quick checks)
-- Sliding window failure rate detection (last 1000 responses)
+- Sliding window failure rate detection
 - Detailed performance metrics and summaries
 - Automatic test abortion on performance degradation
 
@@ -46,15 +47,13 @@ export const SITE_URLS = [
     "https://example2.com/",
 ];
 
-// HTTP Request Duration in milliseconds
-export const HTTP_REQ_DURATION = 5000;
-
-// Load test configuration (default values)
+// Load test configuration
 export const LOAD_TEST_CONFIG = {
-    startVUs: 50,      // Starting number of virtual users
-    targetVUs: 500,    // Target number of virtual users
-    duration: '5m',    // Duration for ramping up
-    responseTimeout: 5000  // Response timeout in milliseconds
+    startVUs: 50,         // Starting number of virtual users
+    targetVUs: 500,       // Target number of virtual users
+    duration: '5m',       // Duration for ramping up (e.g., '5m', '10m', '1h')
+    threshold: 1500,      // Response time threshold in milliseconds
+    maxFailures: 10       // Maximum number of failed requests before aborting
 };
 ```
 
@@ -80,14 +79,15 @@ export const LOAD_TEST_CONFIG = {
 - Configurable starting and target VUs
 - Customizable ramp-up duration
 - Monitors response times and failure rates
-- Uses a sliding window of 1000 responses to detect failure patterns
+- Uses a sliding window to detect failure patterns
 - Aborts automatically if:
-  - 95th percentile response time exceeds threshold
-  - Failure rate exceeds 10%
+  - 95th percentile response time exceeds threshold (default: 1500ms)
+  - Number of failures exceeds maximum allowed (default: 10)
 
 ### Response Time Test
 - Uses a single virtual user
 - Runs for 3 seconds
+- Uses the same threshold configuration as load test
 - Provides basic response time statistics
 - Useful for quick health checks
 
@@ -98,12 +98,13 @@ export const LOAD_TEST_CONFIG = {
 - Target vs actual VUs reached
 - First failure occurrence
 - Total requests
-- Recent failure rate (based on last 1000 responses)
+- Recent failure rate
 - Overall failed requests
 - Average and maximum response times
 - Request rate
 
 ### Response Time Test Summary
+- Threshold value
 - Average response time
 - Minimum response time
 - Maximum response time
@@ -112,8 +113,8 @@ export const LOAD_TEST_CONFIG = {
 ## Error Handling
 
 The suite automatically stops testing when:
-- Response times consistently exceed the configured threshold
-- Too many requests fail within the sliding window (>10% failure rate)
+- Response times consistently exceed the configured threshold (default: 1500ms)
+- Number of failed requests exceeds the maximum allowed (default: 10)
 - The target website becomes unresponsive
 
 ## Customization
@@ -121,7 +122,7 @@ The suite automatically stops testing when:
 You can modify default values in `values.js`:
 - Add or remove target websites in `SITE_URLS`
 - Adjust default VU counts and duration in `LOAD_TEST_CONFIG`
-- Modify response time thresholds in `HTTP_REQ_DURATION`
+- Modify response time threshold and maximum failures in `LOAD_TEST_CONFIG`
 
 ## Contributing
 
